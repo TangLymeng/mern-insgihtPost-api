@@ -1,6 +1,7 @@
 const http = require('http');
 const express = require('express');
 const usersRouter = require("./routes/users/usersRouter");
+const { notFound, globalErrorHandler } = require('./middlewares/globalErrorHandler');
 require("./config/database")();
 
 // Server
@@ -9,20 +10,10 @@ const app = express();
 app.use(express.json()); //Pass incoming data
 // Routes
 app.use("/api/v1/users", usersRouter);
+// not found middleware
+app.use(notFound);
 // error middleware
-app.use((err, req, res, next) => {
-    //status
-    const status = err?.status ? err?.status: "failed";
-    //message
-    const message = err?.message;
-    //stack
-    const stack = err?.stack;
-  res.status(500).json({
-    status,
-    message,
-    stack,
-  });
-});
+app.use(globalErrorHandler);
 
 const server = http.createServer(app);
 // Start server
