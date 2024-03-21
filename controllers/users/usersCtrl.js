@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const asyncHandler = require("express-async-handler");
 const User = require("../../model/User/User");
 const generateToken = require("../../utils/generateToken");
 
@@ -7,9 +8,8 @@ const generateToken = require("../../utils/generateToken");
 //@route POST /api/v1/users/register
 //@access public
 
-exports.register = async (req, res) => {
+exports.register = asyncHandler(async (req, res) => {
   console.log(req.body);
-  try {
     //get the details
     const { username, password, email } = req.body;
     //! Check if user exists
@@ -37,16 +37,9 @@ exports.register = async (req, res) => {
       // role: newUser?.role,
       newUser,
     });
-  } catch (error) {
-    res.json({
-      status: "failed",
-      message: error?.message,
-    });
-  }
-};
+});
 
-exports.login = async (req, res) => {
-  try {
+exports.login = asyncHandler(async (req, res) => {
     //? get the login details
     const { username, password } = req.body;
     //! Check if exists
@@ -69,33 +62,20 @@ exports.login = async (req, res) => {
       role: user?.role,
       token: generateToken(user),
     });
-  } catch (error) {
-    res.json({
-      status: "failed",
-      message: error?.message,
-    });
-  }
-};
+});
 
 //@desc Get profile
 //@route POST /api/v1/users/profile/:id
 //@access Private
 
-exports.getProfile = async (req, res) => {
-  const id = req.userAuth._id;
-  const user = await User.findById(id)
-
-  try {
+exports.getProfile = asyncHandler(async (req, res) => {
+    // get user id
+    const id = req.userAuth._id;
+    const user = await User.findById(id)  
     
     res.json({
       status: "success",
       message: "Profile fetched",
       user,
     });
-  } catch (error) {
-    res.json({
-      status: "failed",
-      message: error?.message,
-    });
-  }
-};
+});
