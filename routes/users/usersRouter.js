@@ -1,7 +1,6 @@
 const express = require("express");
 const { register, login, getProfile } = require("../../controllers/users/usersCtrl");
 const isLoggin = require("../../middlewares/isLoggin");
-
 const usersRouter = express.Router();
 
 //!Register

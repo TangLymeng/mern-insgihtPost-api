@@ -5,11 +5,11 @@ const globalErrorHandler = (err, req, res, next) => {
     const message = err?.message;
     //stack
     const stack = err?.stack;
-  res.status(500).json({
-    status,
-    message,
-    stack,
-  });
+    res.status(500).json({
+        status,
+        message,
+        stack,
+    });
 }
 
 // not found handler
