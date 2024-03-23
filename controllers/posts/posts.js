@@ -56,7 +56,7 @@ exports.createPost = asyncHandler(async (req, res) => {
 //@access Private
 
 exports.getAllPosts = asyncHandler(async (req, res) => {
-  const posts = await Post.find().populate("category").populate("author");
+  const posts = await Post.find().populate("category").populate("author").populate("comments");
   res.json({
     status: "success",
     message: "All posts",
