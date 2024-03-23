@@ -70,7 +70,7 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
 
 exports.getPublicPosts = asyncHandler(async (req, res) => {
   const posts = await Post.find({}).sort({ createdAt: -1 }).limit(4);
-  res.status(201).json({
+  res.status(200).json({
     status: "success",
     message: "Posts successfully fetched",
     posts,

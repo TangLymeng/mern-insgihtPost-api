@@ -8,6 +8,9 @@ const postsRouter = express.Router();
 //create
 postsRouter.post("/", isLoggin, createPost);
 
+//get public posts only 4 posts
+postsRouter.get("/public", getPublicPosts);
+
 //get all
 postsRouter.get("/", isLoggin, getAllPosts);
 
@@ -20,7 +23,5 @@ postsRouter.put("/:id", isLoggin, updatePost);
 //delete post
 postsRouter.delete("/:id", isLoggin, deletePost);
 
-//get public posts only 4 posts
-postsRouter.get("/public", getPublicPosts);
 
 module.exports = postsRouter;
