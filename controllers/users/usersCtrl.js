@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const asyncHandler = require("express-async-handler");
 const User = require("../../model/User/User");
+const sendEmail = require("../../utils/sendEmail");
 const generateToken = require("../../utils/generateToken");
 
 
@@ -250,4 +252,60 @@ exports.unFollowingUser = asyncHandler(async (req, res) => {
     status: "success",
     message: "You have unfollowed the user successfully",
   });
+});
+
+// @route   POST /api/v1/users/forgot-password
+// @desc   Forgot password
+// @access  Public
+
+exports.forgotPassword = asyncHandler(async (req, res) => {
+  //get user email
+  const { email } = req.body;
+  //! find the email in db
+  const userFound = await User.findOne({ email });
+  if (!userFound) {
+    throw new Error("There's No Email In Our System");
+  }
+  //Generate the token
+  const resetToken = await userFound.generatePasswordResetToken();
+  //resave the user
+  await userFound.save();
+
+  //send the email
+  sendEmail(email, resetToken);
+  res.status(200).json({ message: "Password reset email sent", resetToken });
+});
+
+
+// @route   POST /api/v1/users/reset-password/:resetToken
+// @desc   Reset password
+// @access  Public
+
+exports.resetPassword = asyncHandler(async (req, res) => {
+  //Get the id/token from email /params
+  const { resetToken } = req.params;
+  const { password } = req.body;
+  //Convert the token to actual token that has been saved in the db
+  const cryptoToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  
+  console.log(cryptoToken);
+  // find the user by the crypto token
+  const userFound = await User.findOne({
+    passwordResetToken: cryptoToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+  if (!userFound) {
+    throw new Error("Password reset token is invalid or has expired");
+  }
+  //Update the user password
+  const salt = await bcrypt.genSalt(10);
+  userFound.password = await bcrypt.hash(password, salt);
+  userFound.passwordResetExpires = undefined;
+  userFound.passwordResetToken = undefined;
+  //resave the user
+  await userFound.save();
+  res.status(200).json({ message: "Password reset successfully" });
 });
