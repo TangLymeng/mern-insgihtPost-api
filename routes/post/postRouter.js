@@ -1,5 +1,5 @@
 const express = require("express");
-const { createPost, getAllPosts, getPost, updatePost, deletePost, getPublicPosts, likePost, disLikePost } = require("../../controllers/posts/posts");
+const { createPost, getAllPosts, getPost, updatePost, deletePost, getPublicPosts, likePost, disLikePost, claps } = require("../../controllers/posts/posts");
 
 const isLoggin = require("../../middlewares/isLoggin");
 
@@ -29,5 +29,7 @@ postsRouter.put("/likes/:id", isLoggin, likePost);
 //dislike post
 postsRouter.put("/dislikes/:id", isLoggin, disLikePost);
 
+//claps
+postsRouter.put("/claps/:id", isLoggin, claps);
 
 module.exports = postsRouter;

@@ -51,6 +51,10 @@ const postSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    claps: {
+      type: Number,
+      default: 0,
+    },
     comments: [
       {
         type: mongoose.Schema.Types.ObjectId,
