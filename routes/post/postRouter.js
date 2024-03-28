@@ -1,5 +1,5 @@
 const express = require("express");
-const { createPost, getAllPosts, getPost, updatePost, deletePost, getPublicPosts } = require("../../controllers/posts/posts");
+const { createPost, getAllPosts, getPost, updatePost, deletePost, getPublicPosts, likePost, disLikePost } = require("../../controllers/posts/posts");
 
 const isLoggin = require("../../middlewares/isLoggin");
 
@@ -22,6 +22,12 @@ postsRouter.put("/:id", isLoggin, updatePost);
 
 //delete post
 postsRouter.delete("/:id", isLoggin, deletePost);
+
+//like post
+postsRouter.put("/likes/:id", isLoggin, likePost);
+
+//dislike post
+postsRouter.put("/dislikes/:id", isLoggin, disLikePost);
 
 
 module.exports = postsRouter;

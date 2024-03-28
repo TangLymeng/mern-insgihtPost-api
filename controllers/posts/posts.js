@@ -117,3 +117,67 @@ exports.deletePost = asyncHandler(async (req, res) => {
     message: "Post successfully deleted",
   });
 });
+
+//@desc   liking a Post
+//@route  PUT /api/v1/posts/likes/:id
+//@access Private
+
+exports.likePost = asyncHandler(async (req, res) => {
+  //Get the id of the post
+  const { id } = req.params;
+  //get the login user
+  const userId = req.userAuth._id;
+  //Find the post
+  const post = await Post.findById(id);
+  if (!post) {
+    throw new Error("Post not found");
+  }
+  //Push the user into post likes
+
+  await Post.findByIdAndUpdate(
+    id,
+    {
+      $addToSet: { likes: userId },
+    },
+    { new: true }
+  );
+  // Remove the user from the dislikes array if present
+  post.dislikes = post.dislikes.filter(
+    (dislike) => dislike.toString() !== userId.toString()
+  );
+  // resave the post
+  await post.save();                
+  res.status(200).json({ message: "Post liked successfully.", post });
+});
+
+//@desc   dislike a Post
+//@route  PUT /api/v1/posts/dislikes/:id
+//@access Private
+
+exports.disLikePost = asyncHandler(async (req, res) => {
+  //Get the id of the post
+  const { id } = req.params;
+  //get the login user
+  const userId = req.userAuth._id;
+  //Find the post
+  const post = await Post.findById(id);
+  if (!post) {
+    throw new Error("Post not found");
+  }
+  //Push the user into post dislikes
+
+  await Post.findByIdAndUpdate(
+    id,
+    {
+      $addToSet: { dislikes: userId },
+    },
+    { new: true }
+  );
+  // Remove the user from the likes array if present
+  post.likes = post.likes.filter(
+    (like) => like.toString() !== userId.toString()
+  );
+  //resave the post
+  await post.save();
+  res.status(200).json({ message: "Post disliked successfully.", post });
+});
