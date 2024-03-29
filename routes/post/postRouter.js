@@ -1,5 +1,5 @@
 const express = require("express");
-const { createPost, getAllPosts, getPost, updatePost, deletePost, getPublicPosts, likePost, disLikePost, claps } = require("../../controllers/posts/posts");
+const { createPost, getAllPosts, getPost, updatePost, deletePost, getPublicPosts, likePost, disLikePost, claps, schedule } = require("../../controllers/posts/posts");
 
 const isLoggin = require("../../middlewares/isLoggin");
 
@@ -25,6 +25,9 @@ postsRouter.delete("/:id", isLoggin, deletePost);
 
 //like post
 postsRouter.put("/likes/:id", isLoggin, likePost);
+
+//schedule post
+postsRouter.put("/schedule/:postId", isLoggin, schedule);
 
 //dislike post
 postsRouter.put("/dislikes/:id", isLoggin, disLikePost);
