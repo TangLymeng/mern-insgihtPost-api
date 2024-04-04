@@ -56,7 +56,27 @@ exports.createPost = asyncHandler(async (req, res) => {
 //@access Private
 
 exports.getAllPosts = asyncHandler(async (req, res) => {
-  const posts = await Post.find().populate("category").populate("author").populate("comments");
+  // !find all users who have blocked the logged-in user
+  const loggedInUserId = req.userAuth?._id;
+  //get current time
+  const currentTime = new Date();
+  const usersBlockingLoggedInuser = await User.find({
+    blockedUsers: loggedInUserId,
+  });
+  // Extract the IDs of users who have blocked the logged-in user
+  const blockingUsersIds = usersBlockingLoggedInuser?.map((user) => user?._id);
+
+  const query = {
+    author: { $nin: blockingUsersIds },
+    $or: [
+      {
+        shedduledPublished: { $lte: currentTime },
+        shedduledPublished: null,
+      },
+    ],
+  };
+  const posts = await Post.find(query);
+  
   res.json({
     status: "success",
     message: "All posts",
@@ -239,7 +259,7 @@ exports.schedule = asyncHandler(async (req, res) => {
     throw new Error("The scheduled publish date cannot be in the past.");
   }
   //update the post
-  post.shedduledPublished = scheduleDate;
+  post.shedduledPublished = scheduledPublish;
   await post.save();
   res.json({
     status: "success",
