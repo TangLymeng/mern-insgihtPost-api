@@ -75,7 +75,11 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
       },
     ],
   };
-  const posts = await Post.find(query);
+  const posts = await Post.find(query).populate({
+    path: "author",
+    model: "User",
+    select: "email role username",
+  });
   
   res.json({
     status: "success",
@@ -227,9 +231,6 @@ exports.claps = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Post clapped successfully.", post });
 });
 
-//@desc   Shedule a post
-//@route  PUT /api/v1/posts/schedule/:postId
-//@access Private
 
 //@desc   Shedule a post
 //@route  PUT /api/v1/posts/schedule/:postId

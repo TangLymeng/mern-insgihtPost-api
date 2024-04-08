@@ -37,7 +37,6 @@ const postSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -64,6 +63,12 @@ const postSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toObject: {
+      virtuals: true,
+    },
+    toJSON: {
+      virtuals: true,
+    },
   }
 );
 
