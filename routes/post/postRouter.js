@@ -1,12 +1,17 @@
 const express = require("express");
+const multer = require("multer");
 const { createPost, getAllPosts, getPost, updatePost, deletePost, getPublicPosts, likePost, disLikePost, claps, schedule } = require("../../controllers/posts/posts");
 
 const isLoggin = require("../../middlewares/isLoggin");
+const storage = require("../../utils/fileUpload");
 
 const postsRouter = express.Router();
 
+// file upload middleware
+const upload = multer({ storage });
+
 //create
-postsRouter.post("/", isLoggin, createPost);
+postsRouter.post("/", isLoggin, upload.single("file"), createPost);
 
 //get public posts only 4 posts
 postsRouter.get("/public", getPublicPosts);

@@ -8,6 +8,7 @@ const User = require("../../model/User/User");
 //@access Private
 
 exports.createPost = asyncHandler(async (req, res) => {
+
   //Get the payload
   const { title, content, categoryId } = req.body;
   //chech if post exists
@@ -21,6 +22,7 @@ exports.createPost = asyncHandler(async (req, res) => {
     content,
     category: categoryId,
     author: req?.userAuth?._id,
+    image: req?.file?.path,
   });
   //!Associate post to user
   await User.findByIdAndUpdate(
