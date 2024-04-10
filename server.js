@@ -1,4 +1,5 @@
 const dotenv = require('dotenv');
+const cors = require('cors');
 dotenv.config();
 const http = require('http');
 const express = require('express');
@@ -15,6 +16,8 @@ require("./config/database")();
 const app = express();
 
 app.use(express.json()); //Pass incoming data
+// CORS
+app.use(cors());
 // Routes
 app.use("/api/v1/users", usersRouter);
 // category
@@ -31,5 +34,5 @@ app.use(globalErrorHandler);
 const server = http.createServer(app);
 // Start server
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 9080;
 server.listen(PORT, console.log(`Server running on port ${PORT}`));
