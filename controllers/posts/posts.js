@@ -8,7 +8,6 @@ const User = require("../../model/User/User");
 //@access Private
 
 exports.createPost = asyncHandler(async (req, res) => {
-
   //Get the payload
   const { title, content, categoryId } = req.body;
   //chech if post exists
@@ -82,7 +81,7 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
     model: "User",
     select: "email role username",
   });
-  
+
   res.json({
     status: "success",
     message: "All posts",
@@ -99,7 +98,7 @@ exports.getPublicPosts = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .limit(4)
     .populate("category");
-    res.status(200).json({
+  res.status(200).json({
     status: "success",
     message: "Posts successfully fetched",
     posts,
@@ -112,8 +111,8 @@ exports.getPublicPosts = asyncHandler(async (req, res) => {
 
 exports.getPost = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id)
-  .populate("author")
-  .populate("category");
+    .populate("author")
+    .populate("category");
   res.status(201).json({
     status: "success",
     message: "Post successfully fetched",
@@ -126,10 +125,27 @@ exports.getPost = asyncHandler(async (req, res) => {
 //@access Private
 
 exports.updatePost = asyncHandler(async (req, res) => {
-  const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  //!Check if the post exists
+  const { id } = req.params;
+  const postFound = await Post.findById(id);
+  if (!postFound) {
+    throw new Error("Post not found");
+  }
+  //! image update
+  const { title, category, content } = req.body;
+  const post = await Post.findByIdAndUpdate(
+    id,
+    {
+      image: req?.file?.path ? req?.file?.path : postFound?.image,
+      title: title ? title : postFound?.title,
+      category: category ? category : postFound?.category,
+      content: content ? content : postFound?.content,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
   res.status(201).json({
     status: "success",
     message: "post successfully updated",
@@ -144,7 +160,8 @@ exports.updatePost = asyncHandler(async (req, res) => {
 exports.deletePost = asyncHandler(async (req, res) => {
   // find the post
   const postFound = await Post.findById(req.params.id);
-  const isAuthor = req.userAuth?._id.toString() === postFound?.author?._id.toString();
+  const isAuthor =
+    req.userAuth?._id.toString() === postFound?.author?._id.toString();
   if (!isAuthor) {
     throw new Error("Action denied, You are not the author of this post");
   }
@@ -183,7 +200,7 @@ exports.likePost = asyncHandler(async (req, res) => {
     (dislike) => dislike.toString() !== userId.toString()
   );
   // resave the post
-  await post.save();                
+  await post.save();
   res.status(200).json({ message: "Post liked successfully.", post });
 });
 
@@ -243,7 +260,6 @@ exports.claps = asyncHandler(async (req, res) => {
   );
   res.status(200).json({ message: "Post clapped successfully.", post });
 });
-
 
 //@desc   Shedule a post
 //@route  PUT /api/v1/posts/schedule/:postId

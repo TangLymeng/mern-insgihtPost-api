@@ -23,7 +23,7 @@ postsRouter.get("/", isLoggin, getAllPosts);
 postsRouter.get("/:id", getPost);
 
 //update post
-postsRouter.put("/:id", isLoggin, updatePost);
+postsRouter.put("/:id", isLoggin, upload.single("file"), updatePost);
 
 //delete post
 postsRouter.delete("/:id", isLoggin, deletePost);
