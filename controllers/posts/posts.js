@@ -80,7 +80,8 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
     path: "author",
     model: "User",
     select: "email role username",
-  });
+  })
+  .populate("category");
 
   res.json({
     status: "success",
@@ -249,7 +250,7 @@ exports.claps = asyncHandler(async (req, res) => {
     throw new Error("Post not found");
   }
   // Implement the claps
-  await Post.findOneAndUpdate(
+  const updatedPost = await Post.findOneAndUpdate(
     { _id: id }, // Corrected: Construct filter object with _id field
     {
       $inc: { claps: 1 },
@@ -258,7 +259,7 @@ exports.claps = asyncHandler(async (req, res) => {
       new: true,
     }
   );
-  res.status(200).json({ message: "Post clapped successfully.", post });
+  res.status(200).json({ message: "Post clapped successfully.", updatedPost });
 });
 
 //@desc   Shedule a post
