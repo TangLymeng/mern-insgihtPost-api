@@ -1,6 +1,18 @@
 const express = require("express");
 const multer = require("multer");
-const { createPost, getAllPosts, getPost, updatePost, deletePost, getPublicPosts, likePost, disLikePost, claps, schedule } = require("../../controllers/posts/posts");
+const {
+  createPost,
+  getAllPosts,
+  getPost,
+  updatePost,
+  deletePost,
+  getPublicPosts,
+  likePost,
+  disLikePost,
+  claps,
+  schedule,
+  postViewCount,
+} = require("../../controllers/posts/posts");
 
 const isLoggin = require("../../middlewares/isLoggin");
 const storage = require("../../utils/fileUpload");
@@ -39,5 +51,8 @@ postsRouter.put("/dislikes/:id", isLoggin, disLikePost);
 
 //claps
 postsRouter.put("/claps/:id", isLoggin, claps);
+
+//post views
+postsRouter.put("/:id/post-view-count", isLoggin, postViewCount);
 
 module.exports = postsRouter;

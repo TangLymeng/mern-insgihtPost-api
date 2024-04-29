@@ -76,12 +76,13 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
       },
     ],
   };
-  const posts = await Post.find(query).populate({
-    path: "author",
-    model: "User",
-    select: "email role username",
-  })
-  .populate("category");
+  const posts = await Post.find(query)
+    .populate({
+      path: "author",
+      model: "User",
+      select: "email role username",
+    })
+    .populate("category");
 
   res.json({
     status: "success",
@@ -113,7 +114,15 @@ exports.getPublicPosts = asyncHandler(async (req, res) => {
 exports.getPost = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id)
     .populate("author")
-    .populate("category");
+    .populate("category")
+    .populate({
+      path: "comments",
+      model: "Comment",
+      populate: {
+        path: "author",
+        select: "username",
+      },
+    });
   res.status(201).json({
     status: "success",
     message: "Post successfully fetched",
@@ -250,8 +259,8 @@ exports.claps = asyncHandler(async (req, res) => {
     throw new Error("Post not found");
   }
   // Implement the claps
-  const updatedPost = await Post.findOneAndUpdate(
-    { _id: id }, // Corrected: Construct filter object with _id field
+  const updatedPost = await Post.findByIdAndUpdate(
+    id,
     {
       $inc: { claps: 1 },
     },
@@ -297,4 +306,31 @@ exports.schedule = asyncHandler(async (req, res) => {
     message: "Post scheduled successfully",
     post,
   });
+});
+
+//@desc   post  view count
+//@route  PUT /api/v1/posts/:id/post-views-count
+//@access Private
+
+exports.postViewCount = asyncHandler(async (req, res) => {
+  //Get the id of the post
+  const { id } = req.params;
+  //get the login user
+  const userId = req.userAuth._id;
+  //Find the post
+  const post = await Post.findById(id);
+  if (!post) {
+    throw new Error("Post not found");
+  }
+  //Push thr user into post likes
+
+  await Post.findByIdAndUpdate(
+    id,
+    {
+      $addToSet: { postViews: userId },
+    },
+    { new: true }
+  );
+  await post.save();
+  res.status(200).json({ message: "Post liked successfully.", post });
 });
