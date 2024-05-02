@@ -330,7 +330,7 @@ exports.postViewCount = asyncHandler(async (req, res) => {
       $addToSet: { postViews: userId },
     },
     { new: true }
-  );
+  ).populate("author");
   await post.save();
   res.status(200).json({ message: "Post liked successfully.", post });
 });

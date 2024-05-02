@@ -6,65 +6,64 @@ const sendEmail = require("../../utils/sendEmail");
 const generateToken = require("../../utils/generateToken");
 const sendAccVerificationEmail = require("../../utils/sendAccVerificationEmail");
 
-
 //@desc Register a new user
 //@route POST /api/v1/users/register
 //@access public
 
 exports.register = asyncHandler(async (req, res) => {
   console.log(req.body);
-    //get the details
-    const { username, password, email } = req.body;
-    //! Check if user exists
-    const user = await User.findOne({ username });
-    if (user) {
-      throw new Error("User Already Exists");
-    }
-    //Register new user
-    const newUser = new User({
-      username,
-      email,
-      password,
-    });
-    //! hash password
-    const salt = await bcrypt.genSalt(10);
-    newUser.password = await bcrypt.hash(password, salt);
-    //save
-    await newUser.save();
-    res.status(201).json({
-      status: "success",
-      message: "User Registered Successfully",
-      // _id: newUser?._id,
-      // username: newUser?.username,
-      // email: newUser?.email,
-      // role: newUser?.role,
-      newUser,
-    });
+  //get the details
+  const { username, password, email } = req.body;
+  //! Check if user exists
+  const user = await User.findOne({ username });
+  if (user) {
+    throw new Error("User Already Exists");
+  }
+  //Register new user
+  const newUser = new User({
+    username,
+    email,
+    password,
+  });
+  //! hash password
+  const salt = await bcrypt.genSalt(10);
+  newUser.password = await bcrypt.hash(password, salt);
+  //save
+  await newUser.save();
+  res.status(201).json({
+    status: "success",
+    message: "User Registered Successfully",
+    // _id: newUser?._id,
+    // username: newUser?.username,
+    // email: newUser?.email,
+    // role: newUser?.role,
+    newUser,
+  });
 });
 
 exports.login = asyncHandler(async (req, res) => {
-    //? get the login details
-    const { username, password } = req.body;
-    //! Check if exists
-    const user = await User.findOne({ username });
-    if (!user) {
-      throw new Error("Invalid login credentials");
-    }
-    //compare the hashed password with the one the request
-    const isMatched = await bcrypt.compare(password, user?.password);
-    if (!isMatched) {
-      throw new Error("Invalid login credentials");
-    }
-    //Update the last login
-    user.lastLogin = new Date();
-    res.json({
-      status: "success",
-      email: user?.email,
-      _id: user?._id,
-      username: user?.username,
-      role: user?.role,
-      token: generateToken(user),
-    });
+  //? get the login details
+  const { username, password } = req.body;
+  //! Check if exists
+  const user = await User.findOne({ username });
+  if (!user) {
+    throw new Error("Invalid login credentials");
+  }
+  //compare the hashed password with the one the request
+  const isMatched = await bcrypt.compare(password, user?.password);
+  if (!isMatched) {
+    throw new Error("Invalid login credentials");
+  }
+  //Update the last login
+  user.lastLogin = new Date();
+  res.json({
+    status: "success",
+    email: user?.email,
+    _id: user?._id,
+    username: user?.username,
+    role: user?.role,
+    token: generateToken(user),
+  });
 });
 
 //@desc Get profile
@@ -72,9 +71,10 @@ exports.login = asyncHandler(async (req, res) => {
 //@access Private
 
 exports.getProfile = asyncHandler(async (req, res) => {
-    // get user id
-    const id = req.userAuth._id;
-    const user = await User.findById(id).populate({
+  // get user id
+  const id = req.userAuth._id;
+  const user = await User.findById(id)
+    .populate({
       path: "posts",
       model: "Post",
     })
@@ -93,13 +93,36 @@ exports.getProfile = asyncHandler(async (req, res) => {
     .populate({
       path: "profileViewers",
       model: "User",
-    });  
-    
-    res.json({
-      status: "success",
-      message: "Profile fetched",
-      user,
     });
+
+  res.json({
+    status: "success",
+    message: "Profile fetched",
+    user,
+  });
+});
+
+
+//@desc  Get profile
+//@route GET /api/v1/users/public-profile/:userId
+//@access Public
+
+exports.getPublicProfile = asyncHandler(async (req, res, next) => {
+  //! get user id from params
+  const userId = req.params.userId;
+  const user = await User.findById(userId)
+    .select("-password")
+    .populate({
+      path: "posts",
+      populate: {
+        path: "category",
+      },
+    });
+  res.json({
+    status: "success",
+    message: "Public Profile fetched",
+    user,
+  });
 });
 
 //@desc   Block user
@@ -296,7 +319,6 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Password reset email sent", resetToken });
 });
 
-
 // @route   POST /api/v1/users/reset-password/:resetToken
 // @desc   Reset password
 // @access  Public
@@ -310,7 +332,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  
+
   console.log(cryptoToken);
   // find the user by the crypto token
   const userFound = await User.findOne({
