@@ -16,4 +16,4 @@ commentRouter.put("/:id", isLoggin, updateComment);
 //delete
 commentRouter.delete("/:id", isLoggin, deleteComment);
 
-module.exports = commentRouter;
+module.exports = commentRouter; 

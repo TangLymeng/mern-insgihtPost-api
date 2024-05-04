@@ -16,7 +16,6 @@ const storage = new CloudinaryStorage({
   allowedFormats: ["jpg", "png", "jpeg"],
   params: {
     folder: "insightPost-api",
-    transformation: [{ width: 500, height: 500, crop: "limit" }],
   },
 });
 
