@@ -13,6 +13,8 @@ const {
   forgotPassword,
   accountVerificationEmail,
   verifyAccount,
+  uploadeCoverImage,
+  uploadeProfilePicture,
 } = require("../../controllers/users/usersCtrl");
 const isLoggin = require("../../middlewares/isLoggin");
 const storage = require("../../utils/fileUpload");
@@ -27,6 +29,21 @@ usersRouter.post("/register", register);
 
 //!Login
 usersRouter.post("/login", login);
+
+// upload profile image
+usersRouter.put(
+  "/upload-profile-image",
+  isLoggin,
+  upload.single("file"),
+  uploadeProfilePicture
+);
+// upload profile image
+usersRouter.put(
+  "/upload-cover-image",
+  isLoggin,
+  upload.single("file"),
+  uploadeCoverImage
+);
 
 // block user
 usersRouter.put("/block/:userIdToBlock", isLoggin, blockUser);
@@ -64,7 +81,6 @@ usersRouter.get("/profile/", isLoggin, getProfile);
 
 // public profile
 usersRouter.get("/public-profile/:userId", getPublicProfile);
-
 
 // * Export
 module.exports = usersRouter;
