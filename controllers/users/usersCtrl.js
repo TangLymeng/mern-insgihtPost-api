@@ -62,6 +62,7 @@ exports.login = asyncHandler(async (req, res) => {
     _id: user?._id,
     username: user?.username,
     role: user?.role,
+    profilePicture: user?.profilePicture,
     token: generateToken(user),
   });
 });
@@ -425,7 +426,7 @@ exports.uploadeProfilePicture = asyncHandler(async (req, res) => {
 
   //? send the response
   res.json({
-    status: "scuccess",
+    status: "success",
     message: "User profile image updated Succesfully",
     user,
   });
@@ -453,7 +454,7 @@ exports.uploadeCoverImage = asyncHandler(async (req, res) => {
 
   //? send the response
   res.json({
-    status: "scuccess",
+    status: "success",
     message: "User cover image updated Succesfully",
     user,
   });
