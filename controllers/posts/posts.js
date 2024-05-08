@@ -67,7 +67,10 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
   // Extract the IDs of users who have blocked the logged-in user
   const blockingUsersIds = usersBlockingLoggedInuser?.map((user) => user?._id);
 
-  const query = {
+  //! Get the category from request
+  const category = req.query.category;
+
+  let query = {
     author: { $nin: blockingUsersIds },
     $or: [
       {
@@ -76,6 +79,10 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
       },
     ],
   };
+  //! check if category is specified, then add to the query
+  if (category) {
+    query.category = category;
+  }
   const posts = await Post.find(query)
     .populate({
       path: "author",
@@ -112,7 +119,6 @@ exports.getPublicPosts = asyncHandler(async (req, res) => {
 //@access Public
 
 exports.getPost = asyncHandler(async (req, res) => {
-  
   const post = await Post.findById(req.params.id)
     .populate("author")
     .populate("category")
