@@ -157,7 +157,7 @@ exports.getPost = asyncHandler(async (req, res) => {
       model: "Comment",
       populate: {
         path: "author",
-        select: "username",
+        select: "username profilePicture",
       },
     });
   res.status(201).json({
