@@ -101,9 +101,8 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
   // Extract the IDs of users who have blocked the logged-in user
   const blockingUsersIds = usersBlockingLoggedInuser?.map((user) => user?._id);
 
-  //! Get the category and search term from request
-  const category = req.query.category;
-  const searchTerm = req.query.searchTerm;
+  //! Get the category, search term, startDate, and endDate from request
+  const { category, searchTerm, startDate, endDate } = req.query;
 
   let query = {
     author: { $nin: blockingUsersIds },
@@ -114,6 +113,7 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
       },
     ],
   };
+
   //! check if category/searchTerm is specified, then add to the query
   if (category) {
     query.category = category;
@@ -122,8 +122,18 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
     query.title = { $regex: searchTerm, $options: "i" };
   }
 
-  //Pagination parameters from request
+  // Add date range filter if startDate and endDate are provided
+  if (startDate && endDate) {
+    query.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
+  } else if (startDate) {
+    query.createdAt = { $gte: new Date(startDate) };
+  } else if (endDate) {
+    query.createdAt = { $lte: new Date(endDate) };
+  }
 
+  console.log("Query:", JSON.stringify(query));  // Add this line to log the query
+
+  // Pagination parameters from request
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 5;
   const startIndex = (page - 1) * limit;
@@ -140,6 +150,7 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
     .populate("tags")
     .skip(startIndex)
     .limit(limit);
+
   // Pagination result
   const pagination = {};
   if (endIndex < total) {
@@ -162,6 +173,7 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
     posts,
   });
 });
+
 
 //@desc  Get only 4 posts
 //@route GET /api/v1/posts
