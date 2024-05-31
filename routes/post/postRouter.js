@@ -12,6 +12,7 @@ const {
   claps,
   schedule,
   postViewCount,
+  getPostsByTag,
 } = require("../../controllers/posts/posts");
 
 const isLoggin = require("../../middlewares/isLoggin");
@@ -33,6 +34,9 @@ postsRouter.get("/", isLoggin, getAllPosts);
 
 //get single post
 postsRouter.get("/:id", getPost);
+
+//get post by tag
+postsRouter.get("/tags/:tagName", getPostsByTag);
 
 //update post
 postsRouter.put("/:id", isLoggin, upload.single("file"), updatePost);

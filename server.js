@@ -8,6 +8,7 @@ const postsRouter = require("./routes/post/postRouter");
 const { notFound, globalErrorHandler } = require('./middlewares/globalErrorHandler');
 const categoryRouter = require("./routes/category/categoryRouter");
 const commentRouter = require("./routes/comment/commentRouter");
+const tagsRouter = require('./routes/tag/tagRouter');
 
 // Database
 require("./config/database")();
@@ -26,6 +27,8 @@ app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/posts", postsRouter);
 // comment
 app.use("/api/v1/comments", commentRouter);
+//tag
+app.use("/api/v1/tags", tagsRouter)
 // not found middleware
 app.use(notFound);
 // error middleware

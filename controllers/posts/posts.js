@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose"); // Add this line to require mongoose
 const Category = require("../../model/Category/Category");
 const Post = require("../../model/Post/Post");
 const User = require("../../model/User/User");
@@ -7,49 +8,82 @@ const User = require("../../model/User/User");
 //@route POST /api/v1/posts
 //@access Private
 
+//@desc  Create a post
+//@route POST /api/v1/posts
+//@access Private
 exports.createPost = asyncHandler(async (req, res) => {
-  //Get the payload
-  const { title, content, categoryId } = req.body;
-  //chech if post exists
-  const postFound = await Post.findOne({ title });
-  if (postFound) {
-    throw new Error("Post aleady exists");
-  }
-  //Create post
-  const post = await Post.create({
-    title,
-    content,
-    category: categoryId,
-    author: req?.userAuth?._id,
-    image: req?.file?.path,
-  });
-  //!Associate post to user
-  await User.findByIdAndUpdate(
-    req?.userAuth?._id,
-    {
-      $push: { posts: post._id },
-    },
-    {
-      new: true,
-    }
-  );
+  try {
+    const { title, content, categoryId } = req.body;
+    let tags = req.body.tags;
 
-  //* Push post into category
-  await Category.findByIdAndUpdate(
-    categoryId,
-    {
-      $push: { posts: post._id },
-    },
-    {
-      new: true,
+    console.log("Received data:", { title, content, categoryId, tags });
+
+    // Parse tags if they are sent as a JSON string
+    if (typeof tags === "string") {
+      tags = JSON.parse(tags);
     }
-  );
-  //? send the response
-  res.json({
-    status: "scuccess",
-    message: "Post Succesfully created",
-    post,
-  });
+
+    // Convert tags to an array if it's a single value
+    if (!Array.isArray(tags)) {
+      tags = [tags];
+    }
+
+    console.log("Converted tags:", tags);
+
+    // Validate categoryId
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      return res
+        .status(400)
+        .json({ message: `Invalid category ID: ${categoryId}` });
+    }
+
+    // Check if post exists
+    const postFound = await Post.findOne({ title });
+    if (postFound) {
+      return res.status(400).json({ message: "Post already exists" });
+    }
+
+    // Create post
+    const post = await Post.create({
+      title,
+      content,
+      category: categoryId,
+      author: req?.userAuth?._id,
+      image: req?.file?.path,
+      tags: tags, // Store tags directly as strings
+    });
+
+    // Associate post to user
+    await User.findByIdAndUpdate(
+      req?.userAuth?._id,
+      {
+        $push: { posts: post._id },
+      },
+      {
+        new: true,
+      }
+    );
+
+    // Push post into category
+    await Category.findByIdAndUpdate(
+      categoryId,
+      {
+        $push: { posts: post._id },
+      },
+      {
+        new: true,
+      }
+    );
+
+    res.json({
+      status: "success",
+      message: "Post successfully created",
+      post,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 //@desc  Get all posts
@@ -100,9 +134,10 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
     .populate({
       path: "author",
       model: "User",
-      select: "email role username",
+      select: "email role username profilePicture",
     })
     .populate("category")
+    .populate("tags")
     .skip(startIndex)
     .limit(limit);
   // Pagination result
@@ -167,32 +202,60 @@ exports.getPost = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getPostsByTag = async (req, res) => {
+  try {
+    const tagName = req.params.tagName;
+
+    // Query posts that contain the specified tag
+    const posts = await Post.find({ tags: tagName }).populate("category", "name");
+
+    console.log("Posts:", posts);
+
+    // Check if any posts were found
+    if (posts.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No posts found with the specified tag" });
+    }
+
+    // Return the posts
+    res.json({ posts });
+  } catch (error) {
+    console.error("Error fetching posts by tag:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 //@desc  Update a post
 //@route PUT /api/v1/posts/:id
 //@access Private
 
 exports.updatePost = asyncHandler(async (req, res) => {
-  //!Check if the post exists
   const { id } = req.params;
   const postFound = await Post.findById(id);
   if (!postFound) {
     throw new Error("Post not found");
   }
-  //! image update
+
   const { title, category, content } = req.body;
+  const tags = req.body.tags ? JSON.parse(req.body.tags) : [];
+
+  // Update post with new data including tags
   const post = await Post.findByIdAndUpdate(
     id,
     {
-      image: req?.file?.path ? req?.file?.path : postFound?.image,
-      title: title ? title : postFound?.title,
-      category: category ? category : postFound?.category,
-      content: content ? content : postFound?.content,
+      image: req.file ? req.file.path : postFound.image,
+      title: title || postFound.title,
+      category: category || postFound.category,
+      content: content || postFound.content,
+      tags: tags.length ? tags : postFound.tags,
     },
     {
       new: true,
       runValidators: true,
     }
   );
+
   res.status(201).json({
     status: "success",
     message: "post successfully updated",
