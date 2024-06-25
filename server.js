@@ -19,6 +19,10 @@ const app = express();
 app.use(express.json()); //Pass incoming data
 // CORS
 app.use(cors());
+// Define your routes here
+app.get('/', (req, res) => {
+    res.send('Hello, World!');
+});
 // Routes
 app.use("/api/v1/users", usersRouter);
 // category

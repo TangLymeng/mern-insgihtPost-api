@@ -148,6 +148,7 @@ exports.getAllPosts = asyncHandler(async (req, res) => {
     })
     .populate("category")
     .populate("tags")
+    .sort({ createdAt: -1 })
     .skip(startIndex)
     .limit(limit);
 

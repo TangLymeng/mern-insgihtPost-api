@@ -7,6 +7,7 @@ const {
   blockUser,
   unblockUser,
   profileViewers,
+  getPublicProfile,
   followingUser,
   unFollowingUser,
   resetPassword,
@@ -19,7 +20,6 @@ const {
 const isLoggin = require("../../middlewares/isLoggin");
 const storage = require("../../utils/fileUpload");
 const usersRouter = express.Router();
-const { getPublicProfile } = require("../../controllers/users/usersCtrl");
 
 // file upload middleware
 const upload = multer({ storage });
